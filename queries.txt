@@ -1,0 +1,66 @@
+#------------------------------------10 Country with highest recovery counts--------------------------------------------
+
+recovered_table=recovered_table[['Country/Region','11/15/20']]
+recovered_table=recovered_table.rename(columns={'11/15/20':'Recovered No.'})
+recovered=recovered_table.groupby('Country/Region').sum().sort_values(by='Recovered No.',ascending=False)
+re=recovered.head(10).reset_index()
+re.plot(x="Country/Region", y= "Recovered No.", kind="bar").get_figure().savefig(query_name+".png")
+
+#------------------------------------Connecticut Covid Stats------------------------------------------------------------
+
+main_data['Active'] = main_data['Confirmed'] - main_data['Deaths'] - main_data['Recovered']
+main_data_ct=main_data[main_data['Province/State']=='Connecticut']
+main_data_ct=main_data_ct.iloc[-1,:]
+Date=main_data_ct['Last Update']
+Confirmed=str(int(main_data_ct['Confirmed']))
+Deaths=str(int(main_data_ct['Deaths']))
+Recovered=str(int(main_data_ct['Recovered']))
+Active=str(int(main_data_ct['Active']))
+result="Total stats for Connecticut until date: " + Date +" is " +Confirmed+" Cases with \n"+ Deaths+" Deaths \n"+Recovered+" Recovered Cases \n"+Active+" Active Cases"
+
+#-----------------------------------Common Symptoms of Covid------------------------------------------------------------
+
+data_no_na=data_2.dropna()
+data=" ".join(desc for desc in data_no_na.symptom)
+wordcloud=WordCloud(background_color="white").generate(data)
+plt.imshow(wordcloud,interpolation='bilinear')
+plt.axis("off")
+plt.show()
+wordcloud.to_file(query_name+'.png')
+
+#-----------------------------------World Data--------------------------------------------------------------------------
+
+main_data['Active'] = main_data['Confirmed'] - main_data['Deaths'] - main_data['Recovered']
+main=main_data.drop_duplicates(subset=['Province/State'],keep='last')
+result1=main.groupby('Country/Region')['Confirmed', 'Deaths', 'Recovered','Active'].sum()
+result=result1.to_string()
+
+#--------------------------------------------USA Stats------------------------------------------------------------------
+
+main_data['Active'] = main_data['Confirmed'] - main_data['Deaths'] - main_data['Recovered']
+us_stats=main_data.drop_duplicates(subset=['Province/State'],keep='last')
+us_stats=us_stats.groupby('Country/Region')['Confirmed', 'Deaths', 'Recovered','Active'].sum()
+us_stats=us_stats.loc['US']
+result=us_stats.to_string()
+
+#------------------------------------------US Confirm Cases chart ------------------------------------------------------
+
+us_confirm=us_confirmed.drop(columns=['UID','code3','FIPS','Lat','Long_'])
+us_confirm=us_confirm.groupby('Country_Region').sum()
+us_confirm=us_confirm.T
+us_confirm=us_confirm.reset_index()
+us_confirm=us_confirm.rename(columns={'US':'Confirm-counts','index':'Dates'})
+us_confirm.plot().get_figure().savefig(query_name+".png")
+
+#--------------------------------------------US Death Count Chart ------------------------------------------------------
+
+us_death=us_deaths.drop(columns=['UID','iso2','iso3','code3','FIPS','Admin2','Province_State','Lat','Long_','Combined_Key','Population'])
+us_death=us_death.groupby('Country_Region').sum()
+us_death=us_death.T
+us_death=us_death.reset_index()
+us_death=us_death.rename(columns={'US':'Death-counts','index':'Dates'})
+us_death.plot().get_figure().savefig(query_name+".png")
+
+#-----------------------------------------------Ratio of Male and Female infected ratio---------------------------------
+
+result=data_2.groupby('gender').mean()['age'].to_string()
